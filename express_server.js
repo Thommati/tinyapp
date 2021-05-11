@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.set('view engine', 'ejs');
 
 app.use(morgan('tiny'));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 const urlDatabase = {
   'b2xVn2': 'http://www.lighthouselabs.ca',
