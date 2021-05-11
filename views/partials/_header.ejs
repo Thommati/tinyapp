@@ -9,6 +9,11 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
+      <% if (username) { %>
+        <div class="mr-2 font-weight-bold">
+          Logged In As: <span><%= username %></span>
+        </div>
+      <% } %>
       <form class="form-inline" action="/login" method="post">
         <input class="mr-2 form-control" type="text" name="username" aria-label="username">
         <button class="btn btn-outline-dark" type="submit">Login</button>
