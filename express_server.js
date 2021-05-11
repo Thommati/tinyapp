@@ -67,6 +67,12 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longUrl);
 });
 
+app.post('/login', (req, res) => {
+  res
+    .cookie('username', req.body.username)
+    .redirect('/urls');
+});
+
 app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
