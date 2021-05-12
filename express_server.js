@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 const urlDatabase = {
   b2xVn2: { longURL: 'https://www.tsn.ca', userId: 'b2xVn3' },
-  '9sm5xK': { longURL: 'https://www.google.ca', userId: 'b2xVn3' }
+  '9sm5xK': { longURL: 'https://www.bing.com', userId: 'b2xVn3' }
 };
 
 const users = {
@@ -55,11 +55,6 @@ app.get('/', (req, res) => {
 
 app.get('/urls', (req, res) => {
   const user = users[req.cookies['user_id']];
-  
-  if (!user) {
-    return res.redirect('/login');
-  }
-  
   const templateVars = { user, urls: urlDatabase };
   
   return res.render('urls_index', templateVars);
@@ -76,6 +71,11 @@ app.post('/urls', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   const user = users[req.cookies['user_id']];
+  
+  if (!user) {
+    return res.redirect('/login');
+  }
+  
   const templateVars = { user };
   res.render('urls_new', templateVars);
 });
