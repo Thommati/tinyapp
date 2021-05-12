@@ -102,6 +102,11 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longUrl);
 });
 
+app.get('/login', (req, res) => {
+  const templateVars = { user: null };
+  return res.render('login', templateVars);
+});
+
 app.post('/login', (req, res) => {
   const { email } = req.body;
   let userId = '';
