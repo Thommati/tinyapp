@@ -35,15 +35,15 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
 
-const emailAlreadyInUse = (email) => {
-  let emailExists = false;
+const getUserByEmail = (email) => {
+  let user = null;
   for (const id of Object.keys(users)) {
     if (users[id].email === email) {
-      emailExists = true;
+      user = users[id];
       break;
     }
   }
-  return emailExists;
+  return user;
 };
 
 app.get('/', (req, res) => {
@@ -108,20 +108,14 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  const { email } = req.body;
-  let userId = '';
+  const { email, password } = req.body;
+  const user = getUserByEmail(email);
   
-  for (const user of Object.keys(users)) {
-    if (users[user].email === email) {
-      userId = user;
-    }
+  if (!user || user.password !== password) {
+    return res.status(403).render('login', { user: null });
   }
   
-  if (userId) {
-    res.cookie('user_id', userId);
-  }
-  
-  res.redirect('/urls');
+  return res.cookie('user_id', user.id).redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
@@ -142,7 +136,7 @@ app.post('/register', (req, res) => {
     return res.status(400).render('register', { user: null });
   }
   
-  if (emailAlreadyInUse(email)) {
+  if (getUserByEmail(email)) {
     return res.status(400).render('register', { user: null });
   }
   
