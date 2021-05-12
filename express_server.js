@@ -55,11 +55,14 @@ app.get('/', (req, res) => {
 
 app.get('/urls', (req, res) => {
   const user = users[req.cookies['user_id']];
-  const templateVars = {
-    user,
-    urls: urlDatabase
-  };
-  res.render('urls_index', templateVars);
+  
+  if (!user) {
+    return res.redirect('/login');
+  }
+  
+  const templateVars = { user, urls: urlDatabase };
+  
+  return res.render('urls_index', templateVars);
 });
 
 app.post('/urls', (req, res) => {
