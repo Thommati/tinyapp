@@ -18,6 +18,19 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
+const users = {
+  'b2xVn3': {
+    id: 'b2xVn3',
+    email: 'user@example.com',
+    password: 'password'
+  },
+  'b2xAb7': {
+    id: 'b2xAb7',
+    email: 'user2@example.com',
+    password: 'qwerty'
+  }
+};
+
 const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
@@ -92,6 +105,17 @@ app.post('/logout', (req, res) => {
 app.get('/register', (req, res) => {
   const templateVars = { username: '' };
   res.render('register', templateVars);
+});
+
+app.post('/register', (req, res) => {
+  const { email, password } = req.body;
+  const id = generateRandomString();
+  const newUser = { id, email, password };
+  users[id] = newUser;
+  console.log('users', users);
+  res
+    .cookie('user_id', id)
+    .redirect('/urls');
 });
 
 app.listen(PORT, () => {
