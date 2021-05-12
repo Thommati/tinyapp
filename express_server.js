@@ -44,17 +44,18 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  const user = users[req.cookies['user_id']];
+  // console.log('user:', user);
   const templateVars = {
-    urls: urlDatabase,
-    username: req.cookies.username
+    user,
+    urls: urlDatabase
   };
   res.render('urls_index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  const templateVars = {
-    username: req.cookies.username
-  };
+  const user = users[req.cookies['user_id']];
+  const templateVars = { user };
   res.render('urls_new', templateVars);
 });
 
@@ -65,17 +66,17 @@ app.post('/urls', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  console.log('called');
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
 
 app.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
+  const user = users[req.cookies['user_id']];
   const templateVars = {
     shortURL,
-    longURL: urlDatabase[shortURL],
-    username: req.cookies.username
+    user,
+    longURL: urlDatabase[shortURL]
   };
   res.render('urls_show', templateVars);
 });
@@ -91,19 +92,30 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  res
-    .cookie('username', req.body.username)
-    .redirect('/urls');
+  const { email } = req.body;
+  let userId = '';
+  
+  for (const user of Object.keys(users)) {
+    if (users[user].email === email) {
+      userId = user;
+    }
+  }
+  
+  if (userId) {
+    res.cookie('user_id', userId);
+  }
+  
+  res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
   res
-    .clearCookie('username')
+    .clearCookie('user_id')
     .redirect('/urls');
 });
 
 app.get('/register', (req, res) => {
-  const templateVars = { username: '' };
+  const templateVars = { user: null };
   res.render('register', templateVars);
 });
 
@@ -112,7 +124,7 @@ app.post('/register', (req, res) => {
   const id = generateRandomString();
   const newUser = { id, email, password };
   users[id] = newUser;
-  console.log('users', users);
+
   res
     .cookie('user_id', id)
     .redirect('/urls');
