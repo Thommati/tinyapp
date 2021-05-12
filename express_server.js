@@ -73,6 +73,7 @@ app.get('/urls', (req, res) => {
   return res.render('urls_index', templateVars);
 });
 
+// Create url
 app.post('/urls', (req, res) => {
   const userId = req.cookies['user_id'];
   const user = users[userId];
@@ -99,13 +100,19 @@ app.get('/urls/new', (req, res) => {
   }
   
   const templateVars = { user };
-  res.render('urls_new', templateVars);
+  return res.render('urls_new', templateVars);
 });
 
 // Delete a url
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls');
+  const userId = req.cookies['user_id'];
+  const { shortURL } = req.params;
+  
+  if (urlDatabase[shortURL].userId === userId) {
+    delete urlDatabase[shortURL];
+  }
+  
+  return res.redirect('/urls');
 });
 
 // Individual url. User can only see thir own.
@@ -117,7 +124,6 @@ app.get('/urls/:shortURL', (req, res) => {
   
   if (userId === urlDatabase[shortURL].userId) {
     url = urlDatabase[shortURL];
-    console.log(url);
   }
   
   const templateVars = { url, user, shortURL };
@@ -127,14 +133,23 @@ app.get('/urls/:shortURL', (req, res) => {
 
 // Edit a urlDatabase entry
 app.post('/urls/:shortURL', (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  res.redirect('/urls');
+  const userId = req.cookies['user_id'];
+  const { shortURL } = req.params;
+  
+  if (urlDatabase[shortURL].userId === userId) {
+    urlDatabase[shortURL].longURL = req.body.longURL;
+  }
+  
+  return res.redirect('/urls');
 });
 
+// Redirect route
 app.get('/u/:shortURL', (req, res) => {
   const longUrl = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longUrl);
 });
+
+// User Routes
 
 app.get('/login', (req, res) => {
   const templateVars = { user: null };
