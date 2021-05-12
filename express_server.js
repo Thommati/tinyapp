@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 const app = express();
 
@@ -22,12 +23,12 @@ const users = {
   'b2xVn3': {
     id: 'b2xVn3',
     email: 'user@example.com',
-    password: 'password'
+    password: '$2b$12$zzXLYApUz0mNvnrJoSQKtuRqutVjJjkBfctSisqU2hw8uDfHeRMeC'
   },
   'b2xAb7': {
     id: 'b2xAb7',
     email: 'user2@example.com',
-    password: 'qwerty'
+    password: '$2b$12$zzXLYApUz0mNvnrJoSQKtuRqutVjJjkBfctSisqU2hw8uDfHeRMeC'
   }
 };
 
@@ -70,6 +71,7 @@ app.get('/urls', (req, res) => {
   const user = users[userId];
   const usersUrls = urlsForUser(userId);
   const templateVars = { user, urls: usersUrls };
+  console.log('user', user);
   return res.render('urls_index', templateVars);
 });
 
@@ -160,11 +162,22 @@ app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email);
   
-  if (!user || user.password !== password) {
+  if (!user) {
     return res.status(403).render('login', { user: null });
   }
+  console.log('user', user);
+  bcrypt.compare(password, user.password)
+    .then(result => {
+      if (result) {
+        return res.cookie('user_id', user.id).redirect('/urls');
+      }
+      return res.status(403).render('login', { user: null });
+    })
+    .catch(error => {
+      console.log(error);
+      return res.redirect('/login');
+    });
   
-  return res.cookie('user_id', user.id).redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
@@ -188,10 +201,17 @@ app.post('/register', (req, res) => {
   }
   
   const id = generateRandomString();
-  const newUser = { id, email, password };
-  users[id] = newUser;
-
-  return res.cookie('user_id', id).redirect('/urls');
+  
+  bcrypt.hash(password, 12)
+    .then(hash => {
+      const newUser = { id, email, hash };
+      users[id] = newUser;
+      return res.cookie('user_id', id).redirect('/urls');
+    })
+    .catch(error => {
+      console.log(error);
+      return res.redirect('/register');
+    });
 });
 
 app.listen(PORT, () => {
