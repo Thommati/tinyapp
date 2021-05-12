@@ -50,10 +50,6 @@ app.get('/', (req, res) => {
   res.send('Hello');
 });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
 app.get('/urls', (req, res) => {
   const user = users[req.cookies['user_id']];
   // console.log('user:', user);
@@ -64,16 +60,16 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
-app.get('/urls/new', (req, res) => {
-  const user = users[req.cookies['user_id']];
-  const templateVars = { user };
-  res.render('urls_new', templateVars);
-});
-
 app.post('/urls', (req, res) => {
   const shortUrl = generateRandomString();
   urlDatabase[shortUrl] = req.body.longURL;
   res.redirect(`/urls/${shortUrl}`);
+});
+
+app.get('/urls/new', (req, res) => {
+  const user = users[req.cookies['user_id']];
+  const templateVars = { user };
+  res.render('urls_new', templateVars);
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
