@@ -47,12 +47,14 @@ const getUserByEmail = (email) => {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello');
+  if (req.cookies['user_id']) {
+    return res.redirect('/urls');
+  }
+  return res.redirect('/login');
 });
 
 app.get('/urls', (req, res) => {
   const user = users[req.cookies['user_id']];
-  // console.log('user:', user);
   const templateVars = {
     user,
     urls: urlDatabase
