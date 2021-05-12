@@ -90,6 +90,7 @@ app.post('/urls', (req, res) => {
   return res.redirect(`/urls/${shortUrl}`);
 });
 
+// Create url form
 app.get('/urls/new', (req, res) => {
   const user = users[req.cookies['user_id']];
   
@@ -101,19 +102,26 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars);
 });
 
+// Delete a url
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
 
+// Individual url. User can only see thir own.
 app.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
-  const user = users[req.cookies['user_id']];
-  const templateVars = {
-    shortURL,
-    user,
-    longURL: urlDatabase[shortURL].longURL
-  };
+  const userId = req.cookies['user_id'];
+  const user = users[userId];
+  let url = null;
+  
+  if (userId === urlDatabase[shortURL].userId) {
+    url = urlDatabase[shortURL];
+    console.log(url);
+  }
+  
+  const templateVars = { url, user, shortURL };
+  
   return res.render('urls_show', templateVars);
 });
 
