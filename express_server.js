@@ -119,9 +119,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res
-    .clearCookie('user_id')
-    .redirect('/urls');
+  return res.clearCookie('user_id').redirect('/urls');
 });
 
 app.get('/register', (req, res) => {
