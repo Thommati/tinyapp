@@ -46,6 +46,18 @@ const getUserByEmail = (email) => {
   return user;
 };
 
+const urlsForUser = (id) => {
+  const usersUrls = {};
+  
+  for (const shortURL of Object.keys(urlDatabase)) {
+    if (urlDatabase[shortURL].userId === id) {
+      usersUrls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  
+  return usersUrls;
+};
+
 app.get('/', (req, res) => {
   if (req.cookies['user_id']) {
     return res.redirect('/urls');
@@ -54,9 +66,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const user = users[req.cookies['user_id']];
-  const templateVars = { user, urls: urlDatabase };
-  
+  const userId = req.cookies['user_id'];
+  const user = users[userId];
+  const usersUrls = urlsForUser(userId);
+  const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
 });
 
