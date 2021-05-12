@@ -35,6 +35,17 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
 
+const emailAlreadyInUse = (email) => {
+  let emailExists = false;
+  for (const id of Object.keys(users)) {
+    if (users[id].email === email) {
+      emailExists = true;
+      break;
+    }
+  }
+  return emailExists;
+};
+
 app.get('/', (req, res) => {
   res.send('Hello');
 });
@@ -121,13 +132,20 @@ app.get('/register', (req, res) => {
 
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
+  
+  if (email === '' || password === '') {
+    return res.status(400).render('register', { user: null });
+  }
+  
+  if (emailAlreadyInUse(email)) {
+    return res.status(400).render('register', { user: null });
+  }
+  
   const id = generateRandomString();
   const newUser = { id, email, password };
   users[id] = newUser;
 
-  res
-    .cookie('user_id', id)
-    .redirect('/urls');
+  return res.cookie('user_id', id).redirect('/urls');
 });
 
 app.listen(PORT, () => {
