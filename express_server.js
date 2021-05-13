@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const { getUserByEmail } = require('./helpers');
 
 const app = express();
 
@@ -37,17 +38,6 @@ const users = {
 
 const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
-};
-
-const getUserByEmail = (email, database) => {
-  let user = null;
-  for (const id of Object.keys(database)) {
-    if (users[id].email === email) {
-      user = database[id];
-      break;
-    }
-  }
-  return user;
 };
 
 const urlsForUser = (id) => {
