@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 const app = express();
@@ -12,7 +12,10 @@ app.set('view engine', 'ejs');
 
 app.use(morgan('tiny'));
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'TinySession',
+  secret: 'tinyURLsessionSecret'
+}));
 
 const urlDatabase = {
   b2xVn2: { longURL: 'https://www.tsn.ca', userId: 'b2xVn3' },
@@ -60,24 +63,23 @@ const urlsForUser = (id) => {
 };
 
 app.get('/', (req, res) => {
-  if (req.cookies['user_id']) {
+  if (req.session['user_id']) {
     return res.redirect('/urls');
   }
   return res.redirect('/login');
 });
 
 app.get('/urls', (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session['user_id'];
   const user = users[userId];
   const usersUrls = urlsForUser(userId);
   const templateVars = { user, urls: usersUrls };
-  console.log('user', user);
   return res.render('urls_index', templateVars);
 });
 
 // Create url
 app.post('/urls', (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session['user_id'];
   const user = users[userId];
   
   if (!user) {
@@ -95,7 +97,7 @@ app.post('/urls', (req, res) => {
 
 // Create url form
 app.get('/urls/new', (req, res) => {
-  const user = users[req.cookies['user_id']];
+  const user = users[req.session['user_id']];
   
   if (!user) {
     return res.redirect('/login');
@@ -107,7 +109,7 @@ app.get('/urls/new', (req, res) => {
 
 // Delete a url
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session['user_id'];
   const { shortURL } = req.params;
   
   if (urlDatabase[shortURL].userId === userId) {
@@ -120,7 +122,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // Individual url. User can only see thir own.
 app.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
-  const userId = req.cookies['user_id'];
+  const userId = req.session['user_id'];
   const user = users[userId];
   let url = null;
   
@@ -135,7 +137,7 @@ app.get('/urls/:shortURL', (req, res) => {
 
 // Edit a urlDatabase entry
 app.post('/urls/:shortURL', (req, res) => {
-  const userId = req.cookies['user_id'];
+  const userId = req.session['user_id'];
   const { shortURL } = req.params;
   
   if (urlDatabase[shortURL].userId === userId) {
@@ -165,11 +167,12 @@ app.post('/login', (req, res) => {
   if (!user) {
     return res.status(403).render('login', { user: null });
   }
-  console.log('user', user);
+
   bcrypt.compare(password, user.password)
     .then(result => {
       if (result) {
-        return res.cookie('user_id', user.id).redirect('/urls');
+        req.session['user_id'] = user.id;
+        return res.redirect('/urls');
       }
       return res.status(403).render('login', { user: null });
     })
@@ -181,7 +184,8 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  return res.clearCookie('user_id').redirect('/urls');
+  req.session = null;
+  return res.redirect('/urls');
 });
 
 app.get('/register', (req, res) => {
@@ -204,9 +208,10 @@ app.post('/register', (req, res) => {
   
   bcrypt.hash(password, 12)
     .then(hash => {
-      const newUser = { id, email, hash };
+      const newUser = { id, email, password: hash };
       users[id] = newUser;
-      return res.cookie('user_id', id).redirect('/urls');
+      req.session['user_id'] = id;
+      return res.redirect('/urls');
     })
     .catch(error => {
       console.log(error);
