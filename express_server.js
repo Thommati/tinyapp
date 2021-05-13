@@ -3,7 +3,9 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+
 const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers');
+const { urlDatabase, users } = require('./data');
 
 const app = express();
 
@@ -17,24 +19,6 @@ app.use(cookieSession({
   name: 'TinySession',
   secret: 'tinyURLsessionSecret'
 }));
-
-const urlDatabase = {
-  b2xVn2: { longURL: 'https://www.tsn.ca', userId: 'b2xVn3' },
-  '9sm5xK': { longURL: 'https://www.bing.com', userId: 'b2xVn3' }
-};
-
-const users = {
-  'b2xVn3': {
-    id: 'b2xVn3',
-    email: 'user@example.com',
-    password: '$2b$12$zzXLYApUz0mNvnrJoSQKtuRqutVjJjkBfctSisqU2hw8uDfHeRMeC'
-  },
-  'b2xAb7': {
-    id: 'b2xAb7',
-    email: 'user2@example.com',
-    password: '$2b$12$zzXLYApUz0mNvnrJoSQKtuRqutVjJjkBfctSisqU2hw8uDfHeRMeC'
-  }
-};
 
 app.get('/', (req, res) => {
   if (req.session['user_id']) {
