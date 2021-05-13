@@ -83,14 +83,26 @@ app.get('/urls/:shortURL', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   let url = null;
+  let statusCode = 200;
+  let errorMessage = 'This short url does not belong to you.';
   
-  if (userId === urlDatabase[shortURL].userId) {
+  if (!urlDatabase[shortURL]) {
+    statusCode = 404;
+    errorMessage = `Sorry, the short URL for "${shortURL}" does not exist.`;
+  }
+  
+  if (!user) {
+    statusCode = 401;
+    errorMessage = 'You need to be logged in to view this page.';
+  }
+  
+  if (urlDatabase[shortURL] && userId === urlDatabase[shortURL].userId) {
     url = urlDatabase[shortURL];
   }
   
-  const templateVars = { url, user, shortURL };
+  const templateVars = { url, user, shortURL, errorMessage };
   
-  return res.render('urls_show', templateVars);
+  return res.status(statusCode).render('urls_show', templateVars);
 });
 
 // Edit a urlDatabase entry
@@ -107,8 +119,11 @@ app.post('/urls/:shortURL', (req, res) => {
 
 // Redirect route
 app.get('/u/:shortURL', (req, res) => {
-  const longUrl = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longUrl);
+  const longObj = urlDatabase[req.params.shortURL];
+  if (longObj) {
+    return res.redirect(longObj.longURL);
+  }
+  return res.status(404).send('Error: Link does not exist.');
 });
 
 // User Routes
