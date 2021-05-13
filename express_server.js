@@ -108,12 +108,12 @@ app.get('/urls/:shortURL', (req, res) => {
   const user = users[userId];
   let url = null;
   const templateVars = { url, user, shortURL };
-  
   // Return 404 Page Not Found if DB entry for shortURL does not exist.
+
   if (!urlDatabase[shortURL]) {
     return res.status(404).render('statusPages/404', templateVars);
   }
-  
+
   // Return 401 Unauthorized if user is not logged in.
   if (!user) {
     return res.status(401).render('statusPages/401', templateVars);
@@ -123,9 +123,9 @@ app.get('/urls/:shortURL', (req, res) => {
   if (userId !== urlDatabase[shortURL].userId) {
     return res.status(403).render('statusPages/403', templateVars);
   }
-  
+
   // Set the url object and render the page for authenticated and authorized user.
-  url = urlDatabase[shortURL];
+  templateVars.url = urlDatabase[shortURL];
   return res.render('urls_show', templateVars);
 });
 
