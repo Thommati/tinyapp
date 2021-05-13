@@ -20,6 +20,7 @@ app.use(cookieSession({
   secret: 'tinyURLsessionSecret'
 }));
 
+//  Redirect based on logged in status
 app.get('/', (req, res) => {
   if (req.session['user_id']) {
     return res.redirect('/urls');
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
   return res.redirect('/login');
 });
 
+// GET all of a user's URLs
 app.get('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
@@ -35,13 +37,13 @@ app.get('/urls', (req, res) => {
   return res.render('urls_index', templateVars);
 });
 
-// Create url
+// Create new URL
 app.post('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   
   if (!user) {
-    return res.redirect('/login');
+    return res.status(401).render('statusPages/401', { user });
   }
   
   const shortUrl = generateRandomString();
@@ -53,7 +55,7 @@ app.post('/urls', (req, res) => {
   return res.redirect(`/urls/${shortUrl}`);
 });
 
-// Create url form
+// GET create new URL form
 app.get('/urls/new', (req, res) => {
   const user = users[req.session['user_id']];
   
@@ -77,7 +79,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   return res.redirect('/urls');
 });
 
-// Individual url. User can only see thir own.
+// GET individual shortURL. User can only see thir own.
 app.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
   const userId = req.session['user_id'];
@@ -87,13 +89,11 @@ app.get('/urls/:shortURL', (req, res) => {
   let errorMessage = 'This short url does not belong to you.';
   
   if (!urlDatabase[shortURL]) {
-    statusCode = 404;
-    errorMessage = `Sorry, the short URL for "${shortURL}" does not exist.`;
+    return res.status(404).render('statusPages/404', { user });
   }
   
   if (!user) {
-    statusCode = 401;
-    errorMessage = 'You need to be logged in to view this page.';
+    return res.status(401).render('statusPages/401', { user });
   }
   
   if (urlDatabase[shortURL] && userId === urlDatabase[shortURL].userId) {
@@ -123,7 +123,8 @@ app.get('/u/:shortURL', (req, res) => {
   if (longObj) {
     return res.redirect(longObj.longURL);
   }
-  return res.status(404).send('Error: Link does not exist.');
+  const user = users[req.session['user_id']];
+  return res.status(404).render('statusPages/404', { user });
 });
 
 // User Routes
