@@ -6,4 +6,8 @@ const getUserByEmail = (email, database) => {
   }
 };
 
-module.exports = { getUserByEmail };
+const generateRandomString = () => {
+  return Math.random().toString(36).substr(2, 6);
+};
+
+module.exports = { getUserByEmail, generateRandomString };
