@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const { getUserByEmail } = require('../helpers');
+const { getUserByEmail, generateRandomString } = require('../helpers');
 
 const testUsers = {
   'userRandomID': {
@@ -34,5 +34,18 @@ describe('getUserByEmail', () => {
   it('should return undefined if an empty database is passed in', () => {
     const actual = getUserByEmail('user@example.com', {});
     assert.isUndefined(actual);
+  });
+});
+
+describe('generateRandomString', () => {
+  it('should return a string of six characters', () => {
+    const actualLength = generateRandomString().length;
+    assert.equal(actualLength, 6);
+  });
+  
+  it('should return two different strings when called twice', () => {
+    const string1 = generateRandomString();
+    const string2 = generateRandomString();
+    assert.notEqual(string1, string2);
   });
 });
