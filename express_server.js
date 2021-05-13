@@ -42,10 +42,12 @@ app.post('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   
+  // Return Unauthorized if valid user not logged in.
   if (!user) {
     return res.status(401).render('statusPages/401', { user });
   }
   
+  // Create shortURL entry and add it to the database.
   const shortUrl = generateRandomString();
   urlDatabase[shortUrl] = {
     userId,
@@ -59,10 +61,12 @@ app.post('/urls', (req, res) => {
 app.get('/urls/new', (req, res) => {
   const user = users[req.session['user_id']];
   
+  // Redirect to /login if user not logged in.
   if (!user) {
     return res.redirect('/login');
   }
   
+  // Return create new URL form.
   const templateVars = { user };
   return res.render('urls_new', templateVars);
 });
@@ -103,30 +107,33 @@ app.get('/urls/:shortURL', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   let url = null;
-  let statusCode = 200;
-  let errorMessage = 'This short url does not belong to you.';
+  const templateVars = { url, user, shortURL };
   
+  // Return 404 Page Not Found if DB entry for shortURL does not exist.
   if (!urlDatabase[shortURL]) {
-    return res.status(404).render('statusPages/404', { user });
+    return res.status(404).render('statusPages/404', templateVars);
   }
   
+  // Return 401 Unauthorized if user is not logged in.
   if (!user) {
-    return res.status(401).render('statusPages/401', { user });
+    return res.status(401).render('statusPages/401', templateVars);
+  }
+
+  // Return 403 Forbidden if user is not the owner of the shortURL.
+  if (userId !== urlDatabase[shortURL].userId) {
+    return res.status(403).render('statusPages/403', templateVars);
   }
   
-  if (urlDatabase[shortURL] && userId === urlDatabase[shortURL].userId) {
-    url = urlDatabase[shortURL];
-  }
-  
-  const templateVars = { url, user, shortURL, errorMessage };
-  
-  return res.status(statusCode).render('urls_show', templateVars);
+  // Set the url object and render the page for authenticated and authorized user.
+  url = urlDatabase[shortURL];
+  return res.render('urls_show', templateVars);
 });
 
 // Edit a urlDatabase entry
 app.post('/urls/:shortURL', (req, res) => {
   const userId = req.session['user_id'];
   
+  // Return 401 Unauthorized if user is not logged in.
   if (!userId) {
     return res.status(401).render('statusPages/401', { user: null });
   }
@@ -135,24 +142,30 @@ app.post('/urls/:shortURL', (req, res) => {
   const entry = urlDatabase[shortURL];
   const user = users[userId];
   
+  // Return 404 Not Found if database entry for the shortURL is not found.
   if (!entry) {
     return res.satus(404).render('statusPages/404', { user });
   }
   
+  // Return 403 Forbidden if logged in user is no the owner of the shortURL.
   if (entry.userId !== userId) {
-    return res.status(401).render('statusPages/401', { user });
+    return res.status(403).render('statusPages/403', { user });
   }
   
+  // Update the database entry and redirect to /urls.
   entry.longURL = req.body.longURL;
   return res.redirect('/urls');
 });
 
 // Redirect to external sites route.
 app.get('/u/:shortURL', (req, res) => {
+  // If a valid address is entered redirect to the appropriate external site.
   const longObj = urlDatabase[req.params.shortURL];
   if (longObj) {
     return res.redirect(longObj.longURL);
   }
+  
+  // Return 404 Not Found if url is invalid.
   const user = users[req.session['user_id']];
   return res.status(404).render('statusPages/404', { user });
 });
@@ -222,16 +235,19 @@ app.post('/register', (req, res) => {
     errorMessage: ''
   };
   
+  // Return 400 Bad Request if a blank email or password is submitted.
   if (email === '' || password === '') {
     templateVars.errorMessage = 'A valid email and password are required to register an account.';
     return res.status(400).render('statusPages/400', templateVars);
   }
   
+  //  Return 400 Bad Request if the email submitted is already in the database.
   if (getUserByEmail(email, users)) {
     templateVars.errorMessage = `${email} already in use.`;
     return res.status(400).render('statusPages/400', templateVars);
   }
   
+  // Generate new user account, create cookie, and redirect to /urls.
   const id = generateRandomString();
   
   bcrypt.hash(password, 12)
