@@ -39,11 +39,11 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
 
-const getUserByEmail = (email) => {
+const getUserByEmail = (email, database) => {
   let user = null;
-  for (const id of Object.keys(users)) {
+  for (const id of Object.keys(database)) {
     if (users[id].email === email) {
-      user = users[id];
+      user = database[id];
       break;
     }
   }
@@ -162,7 +162,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   
   if (!user) {
     return res.status(403).render('login', { user: null });
@@ -200,7 +200,7 @@ app.post('/register', (req, res) => {
     return res.status(400).render('register', { user: null });
   }
   
-  if (getUserByEmail(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).render('register', { user: null });
   }
   
