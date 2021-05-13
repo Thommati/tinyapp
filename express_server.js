@@ -243,7 +243,7 @@ app.post('/register', (req, res) => {
   
   //  Return 400 Bad Request if the email submitted is already in the database.
   if (getUserByEmail(email, users)) {
-    templateVars.errorMessage = `${email} already in use.`;
+    templateVars.errorMessage = `${email} is already in use.`;
     return res.status(400).render('statusPages/400', templateVars);
   }
   
