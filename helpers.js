@@ -10,4 +10,18 @@ const generateRandomString = () => {
   return Math.random().toString(36).substr(2, 6);
 };
 
-module.exports = { getUserByEmail, generateRandomString };
+const urlsForUser = (id, urlDB) => {
+  const usersUrls = {};
+  for (const shortURL of Object.keys(urlDB)) {
+    if (urlDB[shortURL].userId === id) {
+      usersUrls[shortURL] = urlDB[shortURL];
+    }
+  }
+  return usersUrls;
+};
+
+module.exports = {
+  getUserByEmail,
+  generateRandomString,
+  urlsForUser
+};

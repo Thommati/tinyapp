@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const { getUserByEmail, generateRandomString } = require('../helpers');
+const { getUserByEmail, generateRandomString, urlsForUser } = require('../helpers');
 
 const testUsers = {
   'userRandomID': {
@@ -12,6 +12,11 @@ const testUsers = {
     email: 'user2@example.com',
     password: 'dishwasher-funk'
   }
+};
+
+const urlDatabase = {
+  b2xVn2: { longURL: 'https://www.tsn.ca', userId: 'b2xVn3' },
+  '9sm5xK': { longURL: 'https://www.bing.com', userId: 'b2xVn3' }
 };
 
 describe('getUserByEmail', () => {
@@ -47,5 +52,21 @@ describe('generateRandomString', () => {
     const string1 = generateRandomString();
     const string2 = generateRandomString();
     assert.notEqual(string1, string2);
+  });
+  
+  describe('urlsForUser', () => {
+    it('should return an empty object if the user does not have any urls saved in database', () => {
+      const actual = urlsForUser('abcdef', urlDatabase);
+      assert.deepEqual(actual, {});
+    });
+    
+    it('returns the user\'s owned urls as an object of url objects', () => {
+      const actual = urlsForUser('b2xVn3', urlDatabase);
+      const expected = {
+        b2xVn2: { longURL: 'https://www.tsn.ca', userId: 'b2xVn3' },
+        '9sm5xK': { longURL: 'https://www.bing.com', userId: 'b2xVn3' }
+      };
+      assert.deepEqual(actual, expected);
+    });
   });
 });

@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const { getUserByEmail, generateRandomString } = require('./helpers');
+const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers');
 
 const app = express();
 
@@ -36,18 +36,6 @@ const users = {
   }
 };
 
-const urlsForUser = (id) => {
-  const usersUrls = {};
-  
-  for (const shortURL of Object.keys(urlDatabase)) {
-    if (urlDatabase[shortURL].userId === id) {
-      usersUrls[shortURL] = urlDatabase[shortURL];
-    }
-  }
-  
-  return usersUrls;
-};
-
 app.get('/', (req, res) => {
   if (req.session['user_id']) {
     return res.redirect('/urls');
@@ -58,7 +46,7 @@ app.get('/', (req, res) => {
 app.get('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
-  const usersUrls = urlsForUser(userId);
+  const usersUrls = urlsForUser(userId, urlDatabase);
   const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
 });
