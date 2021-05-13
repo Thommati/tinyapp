@@ -67,15 +67,33 @@ app.get('/urls/new', (req, res) => {
   return res.render('urls_new', templateVars);
 });
 
-// Delete a url
+// POST to delete a url
 app.post('/urls/:shortURL/delete', (req, res) => {
   const userId = req.session['user_id'];
-  const { shortURL } = req.params;
+  const templateVars = { user: null };
   
-  if (urlDatabase[shortURL].userId === userId) {
-    delete urlDatabase[shortURL];
+  // If not logged in return unauthorized
+  if (!userId) {
+    return res.status(401).render('statusPages/401', templateVars);
   }
   
+  // Get user object for userId and assign it to template vars.
+  const user = users[userId];
+  templateVars.user = user;
+  const { shortURL } = req.params;
+  
+  // Return not found if database entry cannot be found for shortURL
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).render('statusPages/404', templateVars);
+  }
+  
+  // Return forbidden if user is not owner of the shortURL
+  if (urlDatabase[shortURL].userId !== userId) {
+    return res.status(403).render('statusPages/403', templateVars);
+  }
+  
+  // Delete shortURL from DB and redirect to /urls
+  delete urlDatabase[shortURL];
   return res.redirect('/urls');
 });
 
@@ -108,16 +126,28 @@ app.get('/urls/:shortURL', (req, res) => {
 // Edit a urlDatabase entry
 app.post('/urls/:shortURL', (req, res) => {
   const userId = req.session['user_id'];
-  const { shortURL } = req.params;
   
-  if (urlDatabase[shortURL].userId === userId) {
-    urlDatabase[shortURL].longURL = req.body.longURL;
+  if (!userId) {
+    return res.status(401).render('statusPages/401', { user: null });
   }
   
+  const { shortURL } = req.params;
+  const entry = urlDatabase[shortURL];
+  const user = users[userId];
+  
+  if (!entry) {
+    return res.satus(404).render('statusPages/404', { user });
+  }
+  
+  if (entry.userId !== userId) {
+    return res.status(401).render('statusPages/401', { user });
+  }
+  
+  entry.longURL = req.body.longURL;
   return res.redirect('/urls');
 });
 
-// Redirect route
+// Redirect to external sites route.
 app.get('/u/:shortURL', (req, res) => {
   const longObj = urlDatabase[req.params.shortURL];
   if (longObj) {
@@ -127,9 +157,15 @@ app.get('/u/:shortURL', (req, res) => {
   return res.status(404).render('statusPages/404', { user });
 });
 
-// User Routes
-
+// USER ROUTES
+// GET login page
 app.get('/login', (req, res) => {
+  // Redirect to /urls if already logged in.
+  if (req.session['user_id']) {
+    return res.redirect('/urls');
+  }
+  
+  // Render login form if not logged in.
   const templateVars = { user: null };
   return res.render('login', templateVars);
 });
@@ -138,6 +174,7 @@ app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   
+  // Return 403 Unauthorized if a valid user object cannot be found.
   if (!user) {
     return res.status(403).render('login', { user: null });
   }
@@ -145,37 +182,54 @@ app.post('/login', (req, res) => {
   bcrypt.compare(password, user.password)
     .then(result => {
       if (result) {
+        // Set user_id cookie and redirect to /urls for valid sign-in.
         req.session['user_id'] = user.id;
         return res.redirect('/urls');
       }
+      // Return 403 Forbidden if signin credentials are invalid.
       return res.status(403).render('login', { user: null });
     })
     .catch(error => {
+      // Something went wrong with bcrypt.  Log error and redirect.
       console.log(error);
       return res.redirect('/login');
+      // TODO: Make 500 status page.
     });
   
 });
 
 app.post('/logout', (req, res) => {
+  // Delete cookie and redirect to /url
   req.session = null;
   return res.redirect('/urls');
 });
 
 app.get('/register', (req, res) => {
+  // Redirect to /urls if already logged in.
+  if (req.session['user_id']) {
+    return res.redirect('/urls');
+  }
+  
+  // Render register form
   const templateVars = { user: null };
   res.render('register', templateVars);
 });
 
 app.post('/register', (req, res) => {
   const { email, password } = req.body;
+  const templateVars = {
+    user: null,
+    errorMessage: ''
+  };
   
   if (email === '' || password === '') {
-    return res.status(400).render('register', { user: null });
+    templateVars.errorMessage = 'A valid email and password are required to register an account.';
+    return res.status(400).render('statusPages/400', templateVars);
   }
   
   if (getUserByEmail(email, users)) {
-    return res.status(400).render('register', { user: null });
+    templateVars.errorMessage = `${email} already in use.`;
+    return res.status(400).render('statusPages/400', templateVars);
   }
   
   const id = generateRandomString();
@@ -188,7 +242,8 @@ app.post('/register', (req, res) => {
       return res.redirect('/urls');
     })
     .catch(error => {
-      console.log(error);
+      // Something went wrong with bcrypt. Log error and redirect back to registration page.
+      console.error(error);
       return res.redirect('/register');
     });
 });
