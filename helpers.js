@@ -20,8 +20,22 @@ const urlsForUser = (id, urlDB) => {
   return usersUrls;
 };
 
+const totalNumberOfVisits = ({numVisits}) => {
+  let totalVisits = 0;
+  for (const ip of Object.keys(numVisits)) {
+    totalVisits += numVisits[ip];
+  }
+  return totalVisits;
+};
+
+const totalUniqueIPVisits = ({numVisits}) => {
+  return Object.keys(numVisits).length;
+};
+
 module.exports = {
   getUserByEmail,
   generateRandomString,
-  urlsForUser
+  urlsForUser,
+  totalNumberOfVisits,
+  totalUniqueIPVisits
 };

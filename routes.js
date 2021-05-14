@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 
-const { getUserByEmail, generateRandomString, urlsForUser } = require('./helpers');
+const { getUserByEmail, generateRandomString, urlsForUser, totalNumberOfVisits, totalUniqueIPVisits } = require('./helpers');
 const { urlDatabase, users } = require('./data');
 
 const router = express.Router();
@@ -19,6 +19,10 @@ router.get('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   const usersUrls = urlsForUser(userId, urlDatabase);
+  for (const url of Object.keys(usersUrls)) {
+    usersUrls[url].totalVisits = totalNumberOfVisits(usersUrls[url]);
+    usersUrls[url].uniqueVisits = totalUniqueIPVisits(usersUrls[url]);
+  }
   const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
 });
@@ -147,8 +151,10 @@ router.post('/urls/:shortURL', (req, res) => {
 // Redirect to external sites route.
 router.get('/u/:shortURL', (req, res) => {
   // If a valid address is entered redirect to the appropriate external site.
+  console.log('client ip', req.ip);
   const longObj = urlDatabase[req.params.shortURL];
   if (longObj) {
+    longObj.numVisits[req.ip] = longObj.numVisits[req.ip] ? longObj.numVisits[req.ip]++ : 1;
     return res.redirect(longObj.longURL);
   }
   

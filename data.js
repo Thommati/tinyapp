@@ -2,12 +2,19 @@ const urlDatabase = {
   b2xVn2: {
     longURL: 'https://www.tsn.ca',
     userId: 'b2xVn3',
-    createdAt: new Date('May 13, 2021 13:24:20')
+    createdAt: new Date('May 13, 2021 13:24:20'),
+    numVisits: {
+      '127.0.0.1': 2,
+      '142.143.64.50': 43
+    }
   },
   '9sm5xK': {
     longURL: 'https://www.bing.com',
     userId: 'b2xVn3',
-    createdAt: new Date('May 7, 2021 13:11:00')
+    createdAt: new Date('May 7, 2021 13:11:00'),
+    numVisits: {
+      '127.0.0.1': 7
+    }
   }
 };
 
