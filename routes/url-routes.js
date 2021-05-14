@@ -11,7 +11,7 @@ const router = express.Router();
 
 //  Redirect based on logged in status
 router.get('/', (req, res) => {
-  if (req.session['user_id']) {
+  if (req.user) {
     return res.redirect('/urls');
   }
   return res.redirect('/login');
@@ -19,9 +19,11 @@ router.get('/', (req, res) => {
 
 // GET all of a user's URLs
 router.get('/urls', (req, res) => {
-  const userId = req.session['user_id'];
-  const user = users[userId];
-  const usersUrls = urlsForUser(userId, urlDatabase);
+  const user = req.user;
+  if (!user) {
+    return res.status(401).render('statusPages/401');
+  }
+  const usersUrls = urlsForUser(user.id, urlDatabase);
   const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
 });

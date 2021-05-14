@@ -41,7 +41,6 @@ router.post('/login', (req, res) => {
       console.error(error);
       return res.redirect('/login');
     });
-  
 });
 
 router.post('/logout', (req, res) => {
