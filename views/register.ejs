@@ -5,14 +5,19 @@
     <h3 class="text-center">Register</h3>
     <div class="row">
       <div class="col-8 mx-auto">
+        <% if (errorMessage) { %>
+          <div class="alert alert-danger text-center">
+            <%= errorMessage %>
+          </div>
+        <% } %>
         <form action="/register" method="post">
           <div class="form-group">
             <label for="email">Email Address:</label>
-            <input class="form-control" type="email" id="email" name="email" required>
+            <input class="form-control" type="email" id="email" name="email" >
           </div>
           <div class="form-group">
             <label for="password">Password:</label>
-            <input class="form-control" type="password" id="password" name="password" required>
+            <input class="form-control" type="password" id="password" name="password" >
           </div>
           <button type="submit" class="btn btn-outline-success">Register</button>
         </form>

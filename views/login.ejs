@@ -5,6 +5,11 @@
     <h3 class="text-center">Log In</h3>
     <div class="row">
       <div class="col-8 mx-auto">
+        <% if (errorMessage) { %>
+          <div class="alert alert-danger text-center">
+            <%= errorMessage %>
+          </div>
+        <% } %>
         <form action="/login" method="post">
           <div class="form-group">
             <label for="email">Email Address:</label>

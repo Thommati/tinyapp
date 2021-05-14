@@ -13,7 +13,8 @@ router.get('/login', (req, res) => {
   }
   
   // Render login form if not logged in.
-  return res.render('login');
+  const templateVars = { errorMessage: null };
+  return res.render('login', templateVars);
 });
 
 router.post('/login', (req, res) => {
@@ -24,6 +25,10 @@ router.post('/login', (req, res) => {
   if (!user) {
     return res.status(403).render('statusPages/403');
   }
+  
+  const templateVars = {
+    errorMessage: ''
+  };
 
   bcrypt.compare(password, user.password)
     .then(result => {
@@ -32,8 +37,10 @@ router.post('/login', (req, res) => {
         req.session['user_id'] = user.id;
         return res.redirect('/urls');
       }
-      // Return 403 Forbidden if signin credentials are invalid.
-      return res.status(403).render('statusPages/403');
+      // Set error message for display.
+      templateVars.errorMessage = 'Invalid username or password.';
+      // Return 401 Unauthorized if signin credentials are invalid.
+      return res.status(401).render('login', templateVars);
     })
     .catch(error => {
       // Something went wrong with bcrypt.  Log error and redirect.
@@ -55,7 +62,8 @@ router.get('/register', (req, res) => {
   }
   
   // Render register form
-  res.render('register');
+  const templateVars = { errorMessage: null };
+  res.render('register', templateVars);
 });
 
 router.post('/register', (req, res) => {
@@ -64,14 +72,14 @@ router.post('/register', (req, res) => {
   
   // Return 400 Bad Request if a blank email or password is submitted.
   if (email === '' || password === '') {
-    templateVars.errorMessage = 'A valid email and password are required to register an account.';
-    return res.status(400).render('statusPages/400', templateVars);
+    templateVars.errorMessage = 'A valid email and password are required to register a new account.';
+    return res.status(400).render('register', templateVars);
   }
   
   //  Return 400 Bad Request if the email submitted is already in the database.
   if (getUserByEmail(email, users)) {
     templateVars.errorMessage = `${email} is already in use.`;
-    return res.status(400).render('statusPages/400', templateVars);
+    return res.status(400).render('register', templateVars);
   }
   
   // Generate new user account, create cookie, and redirect to /urls.
