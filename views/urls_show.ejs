@@ -1,26 +1,22 @@
 <%- include('partials/_head') %>
 <%- include('partials/_header') %>
   
-  <% if (url) { %>
-    <div class="card text-center">
-        <div class="card-header"></div>
-        <div class="card-body">
-          <h5 class="card-title">TinyURL for: <%= url.longURL %></h5>
-          <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
-        </div>
-        <div class="card-footer text-muted">
-          <h4>Edit</h3>
-          <form class="form-inline" action="/urls/<%= shortURL %>" method="post">
-            <div class="form-group mx-auto">
-              <label for="edit-url" class="mr-1">New URL:</label>
-              <input id="edit-url" class="form-control mr-2" name="longURL" type="text" value="<%= url.longURL %>">
-              <button class="btn btn-primary" type="submit">Submit</button>
-            </div>
-          </form>
-        </div>
-    </div>
-  <% } else { %>
-    <p class="mt-3 ml-4 text-danger">You need to be logged in as the owner of shortURL <%= shortURL %> to view this page.</p>
-  <% } %>
+  <div class="card text-center">
+      <div class="card-header"></div>
+      <div class="card-body">
+        <h5 class="card-title">TinyURL for: <%= url.longURL %></h5>
+        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+      </div>
+      <div class="card-footer text-muted">
+        <h4>Edit</h3>
+        <form class="form-inline" action="/urls/<%= shortURL %>" method="post">
+          <div class="form-group mx-auto">
+            <label for="edit-url" class="mr-1">New URL:</label>
+            <input id="edit-url" class="form-control mr-2" name="longURL" type="text" value="<%= url.longURL %>">
+            <button class="btn btn-primary" type="submit">Submit</button>
+          </div>
+        </form>
+      </div>
+  </div>
   
 <%- include('partials/_end') %>
