@@ -2,7 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
-const router = require('./routes');
+
+const authRoutes = require('./routes/auth-routes');
+const urlRoutes = require('./routes/url-routes');
 
 const app = express();
 const PORT = 8080;
@@ -17,7 +19,8 @@ app.use(cookieSession({
   name: 'TinySession',
   secret: 'tinyURLsessionSecret'
 }));
-app.use(router);
+app.use(authRoutes);
+app.use(urlRoutes);
 
 // Listen for requests
 app.listen(PORT, () => {
