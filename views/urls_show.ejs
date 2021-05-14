@@ -6,6 +6,9 @@
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= url.longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <p class="card-text">Date Created: <%= url.createdAt.toDateString() %></p>
+        <p class="card-text">Total Number of Visits: <span class="text-success"><%= url.totalVisits %></span></p>
+        <p class="card-text">Total Number of Unique Visits by IP: <span class="text-success"><%= url.uniqueVisits %></span></p>
       </div>
       <div class="card-footer text-muted">
         <h4>Edit</h3>

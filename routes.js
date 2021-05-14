@@ -25,13 +25,6 @@ router.get('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   const usersUrls = urlsForUser(userId, urlDatabase);
-  
-  // Count total and uniqueVisits and add to url objects for display.
-  for (const url of Object.keys(usersUrls)) {
-    usersUrls[url].totalVisits = totalNumberOfVisits(usersUrls[url]);
-    usersUrls[url].uniqueVisits = totalUniqueIPVisits(usersUrls[url]);
-  }
-  
   const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
 });
@@ -125,8 +118,12 @@ router.get('/urls/:shortURL', (req, res) => {
     return res.status(403).render('statusPages/403', templateVars);
   }
 
-  // Set the url object and render the page for authenticated and authorized user.
-  templateVars.url = urlDatabase[shortURL];
+  url = urlDatabase[shortURL];
+  
+  // Count total and uniqueVisits and add to url objects for display.
+  url.totalVisits = totalNumberOfVisits(url);
+  url.uniqueVisits = totalUniqueIPVisits(url);
+  templateVars.url = url;
   return res.render('urls_show', templateVars);
 });
 
