@@ -37,7 +37,8 @@ router.post('/urls', (req, res) => {
   const shortUrl = generateRandomString();
   urlDatabase[shortUrl] = {
     userId,
-    longURL: req.body.longURL
+    longURL: req.body.longURL,
+    createdAt: new Date()
   };
   
   return res.redirect(`/urls/${shortUrl}`);
