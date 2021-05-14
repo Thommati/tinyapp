@@ -1,5 +1,5 @@
 const express = require('express');
-const { urlDatabase, users } = require('../data');
+const { urlDatabase } = require('../data');
 const {
   generateRandomString,
   urlsForUser,
@@ -24,24 +24,23 @@ router.get('/urls', (req, res) => {
     return res.status(401).render('statusPages/401');
   }
   const usersUrls = urlsForUser(user.id, urlDatabase);
-  const templateVars = { user, urls: usersUrls };
+  const templateVars = { urls: usersUrls };
   return res.render('urls_index', templateVars);
 });
 
 // Create new URL
 router.post('/urls', (req, res) => {
-  const userId = req.session['user_id'];
-  const user = users[userId];
+  const user = req.user;
   
   // Return Unauthorized if valid user not logged in.
   if (!user) {
-    return res.status(401).render('statusPages/401', { user });
+    return res.status(401).render('statusPages/401');
   }
   
   // Create shortURL entry and add it to the database.
   const shortUrl = generateRandomString();
   urlDatabase[shortUrl] = {
-    userId,
+    userId: user.id,
     longURL: req.body.longURL,
     createdAt: new Date(),
     numVisits: { }
@@ -52,7 +51,7 @@ router.post('/urls', (req, res) => {
 
 // GET create new URL form
 router.get('/urls/new', (req, res) => {
-  const user = users[req.session['user_id']];
+  const user = req.user;
   
   // Redirect to /login if user not logged in.
   if (!user) {
@@ -60,33 +59,27 @@ router.get('/urls/new', (req, res) => {
   }
   
   // Return create new URL form.
-  const templateVars = { user };
-  return res.render('urls_new', templateVars);
+  return res.render('urls_new');
 });
 
 // POST to delete a url
 router.post('/urls/:shortURL/delete', (req, res) => {
-  const userId = req.session['user_id'];
-  const templateVars = { user: null };
+  const { shortURL } = req.params;
+  const user = req.user;
   
   // If not logged in return unauthorized
-  if (!userId) {
-    return res.status(401).render('statusPages/401', templateVars);
+  if (!user) {
+    return res.status(401).render('statusPages/401');
   }
-  
-  // Get user object for userId and assign it to template vars.
-  const user = users[userId];
-  templateVars.user = user;
-  const { shortURL } = req.params;
   
   // Return not found if database entry cannot be found for shortURL.
   if (!urlDatabase[shortURL]) {
-    return res.status(404).render('statusPages/404', templateVars);
+    return res.status(404).render('statusPages/404');
   }
   
   // Return forbidden if user is not owner of the shortURL.
-  if (urlDatabase[shortURL].userId !== userId) {
-    return res.status(403).render('statusPages/403', templateVars);
+  if (urlDatabase[shortURL].userId !== user.id) {
+    return res.status(403).render('statusPages/403');
   }
   
   // Delete shortURL from DB and redirect to /urls
@@ -97,14 +90,13 @@ router.post('/urls/:shortURL/delete', (req, res) => {
 // GET individual shortURL. User can only see thir own.
 router.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
-  const userId = req.session['user_id'];
-  const user = users[userId];
+  const user = req.user;
   let url = null;
-  const templateVars = { url, user, shortURL };
+  const templateVars = { url, shortURL };
 
   // Return 404 Page Not Found if DB entry for shortURL does not exist.
   if (!urlDatabase[shortURL]) {
-    return res.status(404).render('statusPages/404', templateVars);
+    return res.status(404).render('statusPages/404');
   }
 
   // Return 401 Unauthorized if user is not logged in.
@@ -113,8 +105,8 @@ router.get('/urls/:shortURL', (req, res) => {
   }
 
   // Return 403 Forbidden if user is not the owner of the shortURL.
-  if (userId !== urlDatabase[shortURL].userId) {
-    return res.status(403).render('statusPages/403', templateVars);
+  if (user.id !== urlDatabase[shortURL].userId) {
+    return res.status(403).render('statusPages/403');
   }
 
   url = urlDatabase[shortURL];
@@ -128,25 +120,24 @@ router.get('/urls/:shortURL', (req, res) => {
 
 // Edit a urlDatabase entry
 router.post('/urls/:shortURL', (req, res) => {
-  const userId = req.session['user_id'];
+  const user = req.user;
   
   // Return 401 Unauthorized if user is not logged in.
-  if (!userId) {
-    return res.status(401).render('statusPages/401', { user: null });
+  if (!user) {
+    return res.status(401).render('statusPages/401');
   }
   
   const { shortURL } = req.params;
   const entry = urlDatabase[shortURL];
-  const user = users[userId];
   
   // Return 404 Not Found if database entry for the shortURL is not found.
   if (!entry) {
-    return res.satus(404).render('statusPages/404', { user });
+    return res.satus(404).render('statusPages/404');
   }
   
   // Return 403 Forbidden if logged in user is no the owner of the shortURL.
-  if (entry.userId !== userId) {
-    return res.status(403).render('statusPages/403', { user });
+  if (entry.userId !== user.id) {
+    return res.status(403).render('statusPages/403');
   }
   
   // Update the database entry and redirect to /urls.
@@ -164,8 +155,7 @@ router.get('/u/:shortURL', (req, res) => {
   }
   
   // Return 404 Not Found if url is invalid.
-  const user = users[req.session['user_id']];
-  return res.status(404).render('statusPages/404', { user });
+  return res.status(404).render('statusPages/404');
 });
 
 module.exports = router;
