@@ -51,7 +51,8 @@ router.post('/urls', (req, res) => {
   urlDatabase[shortUrl] = {
     userId,
     longURL: req.body.longURL,
-    createdAt: new Date()
+    createdAt: new Date(),
+    numVisits: { }
   };
   
   return res.redirect(`/urls/${shortUrl}`);
@@ -160,10 +161,9 @@ router.post('/urls/:shortURL', (req, res) => {
 // Redirect to external sites route.
 router.get('/u/:shortURL', (req, res) => {
   // If a valid address is entered redirect to the appropriate external site.
-  console.log('client ip', req.ip);
   const longObj = urlDatabase[req.params.shortURL];
   if (longObj) {
-    longObj.numVisits[req.ip] = longObj.numVisits[req.ip] ? longObj.numVisits[req.ip]++ : 1;
+    longObj.numVisits[req.ip] ? longObj.numVisits[req.ip]++ : longObj.numVisits[req.ip] = 1;
     return res.redirect(longObj.longURL);
   }
   
