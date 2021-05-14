@@ -24,6 +24,9 @@ router.get('/', (req, res) => {
 router.get('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
+  if (!user) {
+    return res.status(401).render('statusPages/401', { user: null });
+  }
   const usersUrls = urlsForUser(userId, urlDatabase);
   const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
