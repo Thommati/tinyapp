@@ -8,22 +8,21 @@ const router = express.Router();
 // GET login page
 router.get('/login', (req, res) => {
   // Redirect to /urls if already logged in.
-  if (req.session['user_id']) {
+  if (req.user) {
     return res.redirect('/urls');
   }
   
   // Render login form if not logged in.
-  const templateVars = { user: null };
-  return res.render('login', templateVars);
+  return res.render('login');
 });
 
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   
-  // Return 403 Unauthorized if a valid user object cannot be found.
+  // Return 403 Forbidden if a valid user object cannot be found.
   if (!user) {
-    return res.status(403).render('login', { user: null });
+    return res.status(403).render('statusPages/403');
   }
 
   bcrypt.compare(password, user.password)
@@ -34,7 +33,7 @@ router.post('/login', (req, res) => {
         return res.redirect('/urls');
       }
       // Return 403 Forbidden if signin credentials are invalid.
-      return res.status(403).render('login', { user: null });
+      return res.status(403).render('statusPages/403');
     })
     .catch(error => {
       // Something went wrong with bcrypt.  Log error and redirect.
@@ -51,21 +50,17 @@ router.post('/logout', (req, res) => {
 
 router.get('/register', (req, res) => {
   // Redirect to /urls if already logged in.
-  if (req.session['user_id']) {
+  if (req.user) {
     return res.redirect('/urls');
   }
   
   // Render register form
-  const templateVars = { user: null };
-  res.render('register', templateVars);
+  res.render('register');
 });
 
 router.post('/register', (req, res) => {
   const { email, password } = req.body;
-  const templateVars = {
-    user: null,
-    errorMessage: ''
-  };
+  const templateVars = { errorMessage: '' };
   
   // Return 400 Bad Request if a blank email or password is submitted.
   if (email === '' || password === '') {
