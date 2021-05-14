@@ -19,12 +19,12 @@ const urlDatabase = {
 };
 
 const users = {
-  'b2xVn3': {
+  b2xVn3: {
     id: 'b2xVn3',
     email: 'user@example.com',
     password: '$2b$12$zzXLYApUz0mNvnrJoSQKtuRqutVjJjkBfctSisqU2hw8uDfHeRMeC'
   },
-  'b2xAb7': {
+  b2xAb7: {
     id: 'b2xAb7',
     email: 'user2@example.com',
     password: '$2b$12$zzXLYApUz0mNvnrJoSQKtuRqutVjJjkBfctSisqU2hw8uDfHeRMeC'

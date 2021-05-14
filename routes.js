@@ -1,7 +1,13 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 
-const { getUserByEmail, generateRandomString, urlsForUser, totalNumberOfVisits, totalUniqueIPVisits } = require('./helpers');
+const {
+  getUserByEmail,
+  generateRandomString,
+  urlsForUser,
+  totalNumberOfVisits,
+  totalUniqueIPVisits
+} = require('./helpers');
 const { urlDatabase, users } = require('./data');
 
 const router = express.Router();
@@ -19,10 +25,13 @@ router.get('/urls', (req, res) => {
   const userId = req.session['user_id'];
   const user = users[userId];
   const usersUrls = urlsForUser(userId, urlDatabase);
+  
+  // Count total and uniqueVisits and add to url objects for display.
   for (const url of Object.keys(usersUrls)) {
     usersUrls[url].totalVisits = totalNumberOfVisits(usersUrls[url]);
     usersUrls[url].uniqueVisits = totalUniqueIPVisits(usersUrls[url]);
   }
+  
   const templateVars = { user, urls: usersUrls };
   return res.render('urls_index', templateVars);
 });
@@ -77,12 +86,12 @@ router.post('/urls/:shortURL/delete', (req, res) => {
   templateVars.user = user;
   const { shortURL } = req.params;
   
-  // Return not found if database entry cannot be found for shortURL
+  // Return not found if database entry cannot be found for shortURL.
   if (!urlDatabase[shortURL]) {
     return res.status(404).render('statusPages/404', templateVars);
   }
   
-  // Return forbidden if user is not owner of the shortURL
+  // Return forbidden if user is not owner of the shortURL.
   if (urlDatabase[shortURL].userId !== userId) {
     return res.status(403).render('statusPages/403', templateVars);
   }
@@ -99,8 +108,8 @@ router.get('/urls/:shortURL', (req, res) => {
   const user = users[userId];
   let url = null;
   const templateVars = { url, user, shortURL };
-  // Return 404 Page Not Found if DB entry for shortURL does not exist.
 
+  // Return 404 Page Not Found if DB entry for shortURL does not exist.
   if (!urlDatabase[shortURL]) {
     return res.status(404).render('statusPages/404', templateVars);
   }
@@ -197,9 +206,8 @@ router.post('/login', (req, res) => {
     })
     .catch(error => {
       // Something went wrong with bcrypt.  Log error and redirect.
-      console.log(error);
+      console.error(error);
       return res.redirect('/login');
-      // TODO: Make 500 status page.
     });
   
 });

@@ -5,11 +5,12 @@ const cookieSession = require('cookie-session');
 const router = require('./routes');
 
 const app = express();
-
 const PORT = 8080;
 
+// Options
 app.set('view engine', 'ejs');
 
+// Middleware
 app.use(morgan('tiny'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
@@ -18,6 +19,7 @@ app.use(cookieSession({
 }));
 app.use(router);
 
+// Listen for requests
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
