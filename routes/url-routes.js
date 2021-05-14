@@ -20,21 +20,24 @@ router.get('/', (req, res) => {
 // GET all of a user's URLs
 router.get('/urls', (req, res) => {
   const user = req.user;
+  const templateVars = { urls: null, errorMessage: '' };
   if (!user) {
-    return res.status(401).render('statusPages/401');
+    templateVars.errorMessage = 'You must be logged in to view this page';
+    return res.status(401).render('urls_index', templateVars);
   }
-  const usersUrls = urlsForUser(user.id, urlDatabase);
-  const templateVars = { urls: usersUrls };
+  templateVars.urls = urlsForUser(user.id, urlDatabase);
   return res.render('urls_index', templateVars);
 });
 
 // Create new URL
 router.post('/urls', (req, res) => {
   const user = req.user;
-  
   // Return Unauthorized if valid user not logged in.
   if (!user) {
-    return res.status(401).render('statusPages/401');
+    const templateVars = {
+      errorMessage: 'You must be logged in to create new short URLs.'
+    };
+    return res.status(401).render('urls_index', templateVars);
   }
   
   // Create shortURL entry and add it to the database.

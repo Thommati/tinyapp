@@ -2,8 +2,8 @@
 <%- include('partials/_header') %>
   
   <main style="margin: 1em;">
-    <h3>My URLs</h3>
     <% if (user) { %>
+      <h3>My URLs</h3>
       <table class="table">
         <thead>
           <tr>
@@ -30,8 +30,17 @@
       </table>
       <a href="/urls/new"><strong>Create New Short Link</strong></a>
     <% } else { %>
-      <p>Please <a href="/login">login</a> to see your URLs, or <a href="/register">register</a> if you do not have an account.</p>
-    <% } %>
+      <div class="container mt-4">
+        <div class="row">
+          <div class="col-8 mx-auto">
+            <div class="alert alert-danger text-center mt-5">
+              <%= errorMessage %>
+              <div>Please <a href="/login">login</a> to see your URLs, or <a href="/register">register</a> if you do not have an account.</div>
+            </div>
+          <% } %>
+          </div>
+        </div>  
+      </div>
   </main>
   
 <%- include('partials/_end') %>
