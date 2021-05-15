@@ -30,6 +30,7 @@
             <input id="edit-url" class="form-control mr-2" name="longURL" type="text" value="<%= url.longURL %>">
             <button class="btn btn-primary" type="submit">Submit</button>
           </div>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         </form>
       </div>
   </div>
