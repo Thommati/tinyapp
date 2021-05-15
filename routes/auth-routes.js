@@ -42,9 +42,10 @@ router.post('/login', (req, res) => {
       return res.status(403).render('login', templateVars);
     })
     .catch(error => {
-      // Something went wrong with bcrypt.  Log error and redirect.
+      // Something went wrong with bcrypt. Log error and try again.
       console.error(error);
-      return res.redirect('/login');
+      templateVars.errorMessage = 'Something went wrong sigining you in, please try again.';
+      return res.status(500).render('/login', templateVars);
     });
 });
 
@@ -92,9 +93,10 @@ router.post('/register', (req, res) => {
       return res.redirect('/urls');
     })
     .catch(error => {
-      // Something went wrong with bcrypt. Log error and redirect back to registration page.
+      // Something went wrong with bcrypt. Log error and try again.
       console.error(error);
-      return res.redirect('/register');
+      templateVars.errorMessage = 'Something went wrong with creating your account, please try again';
+      return res.status(500).render('register', templateVars);
     });
 });
 
