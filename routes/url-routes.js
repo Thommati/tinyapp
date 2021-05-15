@@ -180,7 +180,11 @@ router.get('/u/:shortURL', (req, res) => {
   }
   
   // Return 404 Not Found if url is invalid.
-  return res.status(404).render('statusPages/404');
+  const templateVars = {
+    statusMessage: '404 Page Not Found',
+    errorMessage: `A link for "/u/${req.params.shortURL}" does not exist`
+  };
+  return res.status(404).render('status_page', templateVars);
 });
 
 module.exports = router;
