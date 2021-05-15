@@ -1,6 +1,18 @@
 <%- include('partials/_head') %>
 <%- include('partials/_header') %>
   
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-8 mx-auto">
+        <% if (errorMessage) { %>
+          <div class="alert alert-danger text-center">
+            <%= errorMessage %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
@@ -11,7 +23,7 @@
         <p class="card-text">Total Number of Unique Visits by IP: <span class="text-success"><%= url.uniqueVisits %></span></p>
       </div>
       <div class="card-footer text-muted">
-        <h4>Edit</h3>
+        <h4>Edit</h4>
         <form class="form-inline" action="/urls/<%= shortURL %>" method="post">
           <div class="form-group mx-auto">
             <label for="edit-url" class="mr-1">New URL:</label>
