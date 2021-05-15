@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieSession = require('cookie-session');
 const csrf = require('csurf');
+const helmet = require('helmet');
 
 const authRoutes = require('./routes/auth-routes');
 const urlRoutes = require('./routes/url-routes');
@@ -23,6 +24,7 @@ app.use(cookieSession({
   secret: 'tinyURLsessionSecret'
 }));
 app.use(csrfProtection);
+app.use(helmet());
 
 // Make isLoggedIn and user info available in views
 app.use((req, res, next) => {
