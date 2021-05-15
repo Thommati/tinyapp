@@ -139,10 +139,13 @@ router.get('/urls/:shortURL', (req, res) => {
 // Edit a urlDatabase entry
 router.post('/urls/:shortURL', (req, res) => {
   const user = req.user;
+  const templateVars = { statusMessage: '', errorMessage: '' };
   
   // Return 401 Unauthorized if user is not logged in.
   if (!user) {
-    return res.status(401).render('statusPages/401');
+    templateVars.statusMessage = '401 Unauthorized';
+    templateVars.errorMessage = 'You must be logged in to edit a short URL';
+    return res.status(401).render('status_page', templateVars);
   }
   
   const { shortURL } = req.params;
@@ -150,12 +153,16 @@ router.post('/urls/:shortURL', (req, res) => {
   
   // Return 404 Not Found if database entry for the shortURL is not found.
   if (!entry) {
-    return res.satus(404).render('statusPages/404');
+    templateVars.statusMessage = '404 Not Found';
+    templateVars.errorMessage = `Entry "${shortURL}" could not be found`;
+    return res.satus(404).render('status_page', templateVars);
   }
   
-  // Return 403 Forbidden if logged in user is no the owner of the shortURL.
+  // Return 403 Forbidden if logged in user is not the owner of the shortURL.
   if (entry.userId !== user.id) {
-    return res.status(403).render('statusPages/403');
+    templateVars.statusMessage = '403 Forbidden';
+    templateVars.errorMessage = 'You must be the owner of short URL in order to edit it.';
+    return res.status(403).render('status_page/403', templateVars);
   }
   
   // Update the database entry and redirect to /urls.
