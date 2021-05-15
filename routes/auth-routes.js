@@ -21,14 +21,14 @@ router.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
   
+  const templateVars = {
+    errorMessage: 'Invalid username or password.'
+  };
+  
   // Return 403 Forbidden if a valid user object cannot be found.
   if (!user) {
-    return res.status(403).render('statusPages/403');
+    return res.status(403).render('login', templateVars);
   }
-  
-  const templateVars = {
-    errorMessage: ''
-  };
 
   bcrypt.compare(password, user.password)
     .then(result => {
@@ -38,9 +38,8 @@ router.post('/login', (req, res) => {
         return res.redirect('/urls');
       }
       // Set error message for display.
-      templateVars.errorMessage = 'Invalid username or password.';
-      // Return 401 Unauthorized if signin credentials are invalid.
-      return res.status(401).render('login', templateVars);
+      // Return 403 Forbidden if signin credentials are invalid.
+      return res.status(403).render('login', templateVars);
     })
     .catch(error => {
       // Something went wrong with bcrypt.  Log error and redirect.
