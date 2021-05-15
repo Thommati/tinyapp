@@ -69,20 +69,30 @@ router.get('/urls/new', (req, res) => {
 router.post('/urls/:shortURL/delete', (req, res) => {
   const { shortURL } = req.params;
   const user = req.user;
+  const templateVars = {
+    statusMessage: '',
+    errorMessage: ''
+  };
   
   // If not logged in return unauthorized
   if (!user) {
-    return res.status(401).render('statusPages/401');
+    templateVars.statusMessage = '401 Not Authorized';
+    templateVars.errorMessage = 'You must be logged in to be able to delete short URLs';
+    return res.status(401).render('status_page', templateVars);
   }
   
   // Return not found if database entry cannot be found for shortURL.
   if (!urlDatabase[shortURL]) {
-    return res.status(404).render('statusPages/404');
+    templateVars.statusMessage = '404 Page Not Found';
+    templateVars.errorMessage = `The short URL, "${shortURL}" could not be found.`;
+    return res.status(404).render('status_page', templateVars);
   }
   
   // Return forbidden if user is not owner of the shortURL.
   if (urlDatabase[shortURL].userId !== user.id) {
-    return res.status(403).render('statusPages/403');
+    templateVars.statusMessage = '403 Forbidden';
+    templateVars.errorMessage = 'You must be the owner of short URL in order to delete it.';
+    return res.status(403).render('status_page', templateVars);
   }
   
   // Delete shortURL from DB and redirect to /urls
@@ -95,21 +105,26 @@ router.get('/urls/:shortURL', (req, res) => {
   const { shortURL } = req.params;
   const user = req.user;
   let url = null;
-  const templateVars = { url, shortURL };
-
-  // Return 404 Page Not Found if DB entry for shortURL does not exist.
-  if (!urlDatabase[shortURL]) {
-    return res.status(404).render('statusPages/404');
-  }
+  const templateVars = { url, shortURL, errorMessage: '', statusMessage: '' };
 
   // Return 401 Unauthorized if user is not logged in.
   if (!user) {
-    return res.status(401).render('statusPages/401', templateVars);
+    templateVars.errorMessage = 'You must be logged in to view this page';
+    return res.status(401).render('urls_index', templateVars);
+  }
+  
+  // Return 404 Page Not Found if DB entry for shortURL does not exist.
+  if (!urlDatabase[shortURL]) {
+    templateVars.statusMessage = '404 Page Not Found';
+    templateVars.errorMessage = `Short URL, "${shortURL}" could not be found.`;
+    return res.status(404).render('status_page', templateVars);
   }
 
   // Return 403 Forbidden if user is not the owner of the shortURL.
   if (user.id !== urlDatabase[shortURL].userId) {
-    return res.status(403).render('statusPages/403');
+    templateVars.statusMessage = '403 Forbidden';
+    templateVars.errorMessage = 'You must be the owner of short URL in order to view it.';
+    return res.status(403).render('status_page', templateVars);
   }
 
   url = urlDatabase[shortURL];
